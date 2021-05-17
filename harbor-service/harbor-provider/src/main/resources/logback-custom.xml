@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty scope="context" name="server_name" source="spring.application.name"/>
+    <springProperty scope="context" name="log_dir" source="logging.dir"/>
+
+    <!--读取rabbitMQ配置-->
+<!--    <springProperty scope="context" name="rabbitmq_virtual_host" source="spring.rabbitmq.virtual-host"/>-->
+<!--    <springProperty scope="context" name="rabbitmq_host" source="spring.rabbitmq.host"/>-->
+<!--    <springProperty scope="context" name="rabbitmq_port" source="spring.rabbitmq.port"/>-->
+<!--    <springProperty scope="context" name="rabbitmq_username" source="spring.rabbitmq.username"/>-->
+<!--    <springProperty scope="context" name="rabbitmq_password" source="spring.rabbitmq.password"/>-->
+
+    <property name="maxFileSize" value="50MB"/>
+    <property name="maxHistory" value="30"/>
+    <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+    <property name="STDOUT_PATTERN"
+              value="%boldMagenta(%d{yyyy-MM-dd HH:mm:ss.SSS}) - %highlight(%-5.5level) %green([%10.10thread{10}]) %-30.30logger{30} %cyan([%40.40(%file:%line)]) : %boldYellow(%m%n)"/>
+    <property name="FILE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} - %-5.5level [%10.10thread{10}] %-30.30logger{30} [%40.40(%file:%line)] : %m%n"/>
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--输出-->
+            <pattern>${STDOUT_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- info日志 appender  -->
+    <appender name="INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>${log_dir}/${server_name}-info-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <!-- 日志最大的历史 30天 -->
+            <maxHistory>${maxHistory}</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- maxFileSize:这是活动文件的大小，默认值是10MB，这里设置为50MB -->
+                <maxFileSize>${maxFileSize}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--输出-->
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 只打印info日志 -->
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- 出错日志 appender  -->
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>${log_dir}/${server_name}-error-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <!-- 日志最大的历史 30天 -->
+            <maxHistory>${maxHistory}</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- maxFileSize:这是活动文件的大小，默认值是10MB，这里设置为50MB -->
+                <maxFileSize>${maxFileSize}</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--输出-->
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 只打印错误日志 -->
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- 输出到mq -->
+<!--    <appender name="AMQP" class="org.springframework.amqp.rabbit.logback.AmqpAppender">-->
+<!--        <layout>-->
+<!--            <pattern>-->
+<!--                <![CDATA[${server_name} %d{yyyy-MM-dd}T%d{HH:mm:ss.SSS}Z - %-5.5level [%10.10thread{10}] %-30.30logger{30} [%40.40(%file:%line)] : %m%n]]>-->
+<!--            </pattern>-->
+<!--        </layout>-->
+<!--        <host>${rabbitmq_host}</host>-->
+<!--        <port>${rabbitmq_port}</port>-->
+<!--        <virtualHost>${rabbitmq_virtual_host}</virtualHost>-->
+<!--        <username>${rabbitmq_username}</username>-->
+<!--        <password>${rabbitmq_password}</password>-->
+<!--        <applicationId>${server_name}</applicationId>-->
+<!--        <routingKeyPattern>queue.munion.direct.log</routingKeyPattern>-->
+<!--        <declareExchange>true</declareExchange>-->
+<!--        <exchangeType>direct</exchangeType>-->
+<!--        <exchangeName>exchange.munion.direct.log</exchangeName>-->
+<!--        <generateId>true</generateId>-->
+<!--        <charset>UTF-8</charset>-->
+<!--        <durable>true</durable>-->
+<!--        <deliveryMode>NON_PERSISTENT</deliveryMode>-->
+<!--        <autoDelete>false</autoDelete>-->
+<!--    </appender>-->
+
+
+    <!-- project default level -->
+    <logger name="cc.beup" level="DEBUG"/>
+
+    <!-- jdbc -->
+    <logger name="jdbc.sqltiming" level="DEBUG"/>
+
+    <!-- project level of environment: test -->
+    <springProfile name="test">
+        <logger name="cc.beup" level="DEBUG"/>
+    </springProfile>
+
+    <!-- project level of environment: prod -->
+    <springProfile name="prod">
+        <logger name="cc.beup" level="INFO"/>
+    </springProfile>
+
+    <!--控制台和日志文件输出级别-->
+    <root level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="INFO"/>
+        <appender-ref ref="ERROR"/>
+<!--        <appender-ref ref="AMQP"/>-->
+    </root>
+
+
+</configuration>
